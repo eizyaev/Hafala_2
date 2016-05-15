@@ -1,16 +1,5 @@
 //TODO - add headers
 
-int readcount, writecount; //(initial value = 0)
-semaphore rmutex, wmutex, readTry, resource; //(initial value = 1)
-
-typedef struct _account
-{
-    int acc_id;
-    std::string pass;
-    int balance;
-    MyStruct(int k, const std::string& s) : key(k), stringValue(s) {}
-} account;
-
 /* Print balance information for account
  * Param 1 - pointer to account
  * Param 2 - password for that account */
