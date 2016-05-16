@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include <string>
 
+/* Class for thread safe account managment */
 class Account
 {
     private:
@@ -23,13 +24,15 @@ class Account
         pthread_mutex_t resource;
 
     public:
-        Account(int id = 0, double money = 0, const std::string& password = ""); // TODO include default cons for find()
-        ~Account();
-        void deposit(double money);
-        double get_balance();
-        bool is_valid(std::string password);
-        bool operator<(const Account& acc) const; // TODO correct syntax?
-        bool operator==(const Account& acc) const; // TODO correct syntax?
+        Account(int id = 0, double money = 0, const std::string& password = ""); // constructor
+        ~Account(); // distructor
+
+        void deposit(double money); // depositis money into the account
+        double get_balance(); // returns the account balance
+        bool is_valid(std::string password); // checks if the entered password is correct
+
+        bool operator<(const Account& acc) const; // operator overload for sorting accounts by id
+        bool operator==(const Account& acc) const; // operator overload for searching account by its id
 };
 
 #endif
