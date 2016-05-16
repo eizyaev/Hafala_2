@@ -2,19 +2,10 @@
 #define ACCOUNT_H
 
 #include <pthread.h>
+#include <string>
 
 class Account
 {
-    public:
-        Account(int id);
-        Account(int id , double money, std::string password); // TODO include default cons for find()
-        void deposit(std::string password, double money);
-        void pull(std::string password, double money);
-        double balance(std::string password);
-
-        bool operator<(const Account& acc) const; // TODO correct syntax?
-        bool operator==(const Account& acc) const; // TODO correct syntax?
-
     private:
         // account data
         int acc_id;
@@ -31,6 +22,14 @@ class Account
         pthread_mutex_t block_r_mutex;
         pthread_mutex_t resource;
 
+    public:
+        Account(int id = 0, double money = 0, const std::string& password = ""); // TODO include default cons for find()
+        ~Account();
+        void deposit(double money);
+        double get_balance();
+        bool is_valid(std::string password);
+        bool operator<(const Account& acc) const; // TODO correct syntax?
+        bool operator==(const Account& acc) const; // TODO correct syntax?
 };
 
 #endif

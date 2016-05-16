@@ -53,7 +53,7 @@ void Write_acc(account *acc, string pass, int amount)
         readTry.V();//if you're last writer, you must unlock the readers. Allows them to try enter CS for reading
     wmutex.V();//release exit section
 }
-
+}
 /* Creates new account and updates the Container of accounts
  * Param 1 - account id to be created
  * Param 2 - password for that account
