@@ -28,7 +28,7 @@ bool Account::is_valid(std::string password)
 }
 
 /* Transfer money from this account to dest account*/
-bool Account::transfer(double money, Account* dest)
+bool Account::transfer(double money, Account* dest, double *src_bal, double* dst_bal)
 {
     bool status = true;
 
@@ -42,13 +42,14 @@ bool Account::transfer(double money, Account* dest)
     pthread_mutex_lock(&resource); //reserve the resource for yourself
     if (money > balance)
     {
-        status = false;    
         sleep(1);
+        status = false;    
     }
     else
     {
         balance -= money;  // writing is performed
-        dest->deposit(money);
+        *src_bal = balance;
+        *dst_bal = dest->deposit(money);
     }
     pthread_mutex_unlock(&resource); //release file
 
@@ -62,8 +63,10 @@ bool Account::transfer(double money, Account* dest)
     return status;
 }
 /* Writers implemantion per account */
-void Account::deposit(double money)
+double Account::deposit(double money)
 {
+    double new_bal = 0;
+
     pthread_mutex_lock(&w_mutex); //reserve entry section for writers - avoids race conditions
     writecount++; //report yourself as a writer entering
     if (writecount == 1) //checks if you're first writer
@@ -72,8 +75,9 @@ void Account::deposit(double money)
 
     // writing is performed
     pthread_mutex_lock(&resource); //reserve the resource for yourself - prevents other writers from simultaneously editing the shared resource
-    balance += money;  // writing is performed
     sleep(1);
+    balance += money;  // writing is performed
+    new_bal = balance;
     pthread_mutex_unlock(&resource); //release file
 
 
@@ -82,10 +86,12 @@ void Account::deposit(double money)
     if (writecount == 0) //checks if you're the last writer
         pthread_mutex_unlock(&block_r_mutex); //if you're last writer, you must unlock the readers. Allows them to try enter CS for reading
     pthread_mutex_unlock(&w_mutex); //release exit section
+
+    return new_bal;
 }
 
 /* Writers implemantion per account */
-bool Account::pull(double money)
+bool Account::pull(double money, double* new_bal)
 {
     bool status = true;
 
@@ -97,11 +103,12 @@ bool Account::pull(double money)
 
     // writing is performed
     pthread_mutex_lock(&resource); //reserve the resource for yourself - prevents other writers from simultaneously editing the shared resource
+    sleep(1);
     if (money > balance)
         status = false;    
     else
         balance -= money;  // writing is performed
-    sleep(1);
+    (*new_bal) = balance;
     pthread_mutex_unlock(&resource); //release file
 
 
