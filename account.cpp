@@ -1,4 +1,5 @@
 #include "account.h"
+#include <unistd.h>
 
 //READERS WRITERS 2016S
 
@@ -26,6 +27,40 @@ bool Account::is_valid(std::string password)
     return pass == password;
 }
 
+/* Transfer money from this account to dest account*/
+bool Account::transfer(double money, Account* dest)
+{
+    bool status = true;
+
+    pthread_mutex_lock(&w_mutex); //reserve entry section for writers - avoids race conditions
+    writecount++; //report yourself as a writer entering
+    if (writecount == 1) //checks if you're first writer
+        pthread_mutex_lock(&block_r_mutex); //if you're first, then you must lock the readers out. Prevent them from trying to enter CS
+    pthread_mutex_unlock(&w_mutex); //release entry section
+
+    // writing is performed
+    pthread_mutex_lock(&resource); //reserve the resource for yourself
+    if (money > balance)
+    {
+        status = false;    
+        sleep(1);
+    }
+    else
+    {
+        balance -= money;  // writing is performed
+        dest->deposit(money);
+    }
+    pthread_mutex_unlock(&resource); //release file
+
+
+    pthread_mutex_lock(&w_mutex); //reserve exit section
+    writecount--; //indicate you're leaving
+    if (writecount == 0) //checks if you're the last writer
+        pthread_mutex_unlock(&block_r_mutex); //if you're last writer, you must unlock the readers. Allows them to try enter CS for reading
+    pthread_mutex_unlock(&w_mutex); //release exit section
+
+    return status;
+}
 /* Writers implemantion per account */
 void Account::deposit(double money)
 {
@@ -38,6 +73,7 @@ void Account::deposit(double money)
     // writing is performed
     pthread_mutex_lock(&resource); //reserve the resource for yourself - prevents other writers from simultaneously editing the shared resource
     balance += money;  // writing is performed
+    sleep(1);
     pthread_mutex_unlock(&resource); //release file
 
 
@@ -46,6 +82,36 @@ void Account::deposit(double money)
     if (writecount == 0) //checks if you're the last writer
         pthread_mutex_unlock(&block_r_mutex); //if you're last writer, you must unlock the readers. Allows them to try enter CS for reading
     pthread_mutex_unlock(&w_mutex); //release exit section
+}
+
+/* Writers implemantion per account */
+bool Account::pull(double money)
+{
+    bool status = true;
+
+    pthread_mutex_lock(&w_mutex); //reserve entry section for writers - avoids race conditions
+    writecount++; //report yourself as a writer entering
+    if (writecount == 1) //checks if you're first writer
+        pthread_mutex_lock(&block_r_mutex); //if you're first, then you must lock the readers out. Prevent them from trying to enter CS
+    pthread_mutex_unlock(&w_mutex); //release entry section
+
+    // writing is performed
+    pthread_mutex_lock(&resource); //reserve the resource for yourself - prevents other writers from simultaneously editing the shared resource
+    if (money > balance)
+        status = false;    
+    else
+        balance -= money;  // writing is performed
+    sleep(1);
+    pthread_mutex_unlock(&resource); //release file
+
+
+    pthread_mutex_lock(&w_mutex); //reserve exit section
+    writecount--; //indicate you're leaving
+    if (writecount == 0) //checks if you're the last writer
+        pthread_mutex_unlock(&block_r_mutex); //if you're last writer, you must unlock the readers. Allows them to try enter CS for reading
+    pthread_mutex_unlock(&w_mutex); //release exit section
+
+    return status;
 }
 
 /* Readers implemantion per account */
@@ -63,6 +129,7 @@ double Account::get_balance()
 
     // reading is performed
     double cur_balance = balance;
+    sleep(1);
 
     pthread_mutex_lock(&r_mutex); //reserve exit section - avoids race condition with readers
     readcount--; //indicate you're leaving

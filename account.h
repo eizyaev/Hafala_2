@@ -27,9 +27,17 @@ class Account
         Account(int id = 0, double money = 0, const std::string& password = ""); // constructor
         ~Account(); // distructor
 
-        void deposit(double money); // depositis money into the account
-        double get_balance(); // returns the account balance
-        bool is_valid(std::string password); // checks if the entered password is correct
+        /* depositis money into the account */
+        void deposit(double money); 
+        /* pulls money from the account, returns false if there's 
+         * not enough money to be pulled */
+        bool pull(double money);
+        /* retunrs the account balance */
+        double get_balance(); 
+        /* checks if the entered password is correct */
+        bool is_valid(std::string password); 
+         /* Transfer money from this account to dest account*/
+        bool transfer(double money, Account* dest);
 
         bool operator<(const Account& acc) const; // operator overload for sorting accounts by id
         bool operator==(const Account& acc) const; // operator overload for searching account by its id
