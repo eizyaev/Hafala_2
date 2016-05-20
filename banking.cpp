@@ -28,7 +28,7 @@ class compare_for_sort
  * Param 1 - account id to be created
  * Param 2 - password for that account
  * Param 3 - amount to initialize account with */
-void Create_acc(int acc_id, int pass, int amount)
+void Create_acc(int acc_id, int pass, double amount)
 {
     Account* new_acc = new Account(acc_id, amount, pass); // new account
     b_accs.push_back(new_acc); // inserting into our bank
