@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <pthread.h>
 #include "atm.h"
 
 
@@ -34,7 +35,13 @@ int main(int argc, char *argv[])
 
     pthread_mutex_destroy(&create_acc);
 
+    for (i=0 ; i < atm_num ; i++)
+        free(atm[i].log);
+    free(atm_threads);
+    free(atm);
     
-    // TODO: add memory free
+    for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
+        delete (*it);
+
     return 0;
 }
