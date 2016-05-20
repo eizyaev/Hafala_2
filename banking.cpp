@@ -2,9 +2,8 @@
 #include "atm.h"
 
 /* The main database for the bank, container of accounts
- * b_accs - used for reading/writing
- * sorted_accs - used for printing bank status in sorted order */
-std::vector<Account*> b_accs, sorted_accs;
+ * b_accs - used for reading/writing */
+std::vector<Account*> b_accs;
 
 /* The bank status printing thread function
  * Prints the status of all accounts every 0.5 second */
@@ -30,7 +29,7 @@ void* print_status(void *arg)
         pthread_mutex_unlock(&block_mutex); // done trying access the database
         
         // database section reading, (iterating)
-        for(std::vector<Account*>::iterator it = sorted_accs.begin(); it != sorted_accs.end(); ++it)
+        for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
         {
             balance = (*it)->bank_get_balance();
             id = (*it)->get_id();
@@ -77,8 +76,7 @@ void Create_acc(int acc_id, int pass, double amount)
 {
     Account* new_acc = new Account(acc_id, amount, pass); // new account
     b_accs.push_back(new_acc); // inserting into our bank
-    sorted_accs.push_back(new_acc); // inserting into duplicate vector which is always sorted
-    std::sort(sorted_accs.begin(), sorted_accs.end(), compare_for_sort()); // sorting by id
+    std::sort(b_accs.begin(), b_accs.end(), compare_for_sort()); // sorting by id
 }
 
 /* Searches the accounts container for the related acount per id

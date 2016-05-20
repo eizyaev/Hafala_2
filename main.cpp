@@ -7,6 +7,7 @@
 
 int main(int argc, char *argv[])
 {
+    // minimum arguments check
     if (argc < 3)
     {
         printf("illegal arguments\n");
@@ -16,6 +17,7 @@ int main(int argc, char *argv[])
     int i=0; 
     int atm_num = atoi(argv[1]);
     ATM_count = atm_num;
+    // atm's args allocating space
     ATM_args* atm = (ATM_args*)malloc(sizeof (ATM_args)*atm_num);
     if (atm == NULL)
     {
@@ -23,6 +25,7 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
+    // allocation atm's ptreads
     pthread_t *atm_threads= (pthread_t*)malloc(sizeof(pthread_t)*atm_num);
     if (atm == NULL)
     {
@@ -30,10 +33,12 @@ int main(int argc, char *argv[])
         free(atm);
         exit(1);
     }
+
     // bank printing thread
     pthread_t bank_print;
     pthread_create(&bank_print, NULL, print_status, (void*)NULL); // TODO syscall
 
+    // database readers/writers mutexes
     pthread_mutex_init(&create_mutex, NULL); // TODO syscall
     pthread_mutex_init(&find_mutex, NULL); // TODO syscall
     pthread_mutex_init(&resource_mutex, NULL); // TODO syscall
@@ -61,13 +66,17 @@ int main(int argc, char *argv[])
         }
         strcpy(atm[i].log, argv[i+2]);
         atm[i].id = i+1;
+        // creating atm's threads
         pthread_create(&atm_threads[i], NULL, ATM, (void*)&atm[i]); // TODO syscall
     }
 
+    // collecting finshed atm threads
     for(i=0; i < atm_num; i++)
         pthread_join(atm_threads[i], NULL); // TODO syscall
+    // collecting banking printing thread
     pthread_join(bank_print, NULL); // TODO syscall
 
+    // destroying database mutexes
     pthread_mutex_destroy(&create_mutex); // TODO syscall
     pthread_mutex_destroy(&find_mutex); // TODO syscall
     pthread_mutex_destroy(&resource_mutex); // TODO syscall
@@ -84,6 +93,7 @@ int main(int argc, char *argv[])
     free(atm_threads);
     free(atm);
     
+    // accounts memory free
     for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
         delete (*it);
 

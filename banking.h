@@ -6,9 +6,8 @@
 #include "account.h"
 
 /* The main database for the bank, container of accounts
- * b_accs - used for reading/writing
- * sorted_accs - used for printing bank status in sorted order */
-extern std::vector<Account*> b_accs, sorted_accs;
+ * b_accs - used for reading/writing */
+extern std::vector<Account*> b_accs;
 
 /* The bank status printing thread function
  * Prints the status of all accounts every 0.5 second */
