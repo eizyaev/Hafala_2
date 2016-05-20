@@ -9,7 +9,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 3)
     {
-        printf("Incorrect imput, Exiting...\n");
+        printf("illegal arguments\n");
         return 1;
     }
 
@@ -18,6 +18,8 @@ int main(int argc, char *argv[])
     ATM_args* atm = (ATM_args*)malloc(sizeof (ATM_args)*atm_num);
     pthread_t *atm_threads= (pthread_t*)malloc(sizeof(pthread_t)*atm_num);
     pthread_mutex_init(&create_acc, NULL);
+    ATM_count = atm_num;
+    printf("DEBUG : Number of ATM's %d\n", ATM_count);
 
     for (i=0 ; i < atm_num ; i++)
     {

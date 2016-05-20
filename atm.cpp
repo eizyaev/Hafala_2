@@ -9,6 +9,7 @@
 
 int do_command(char* line, int ATM_id);
 pthread_mutex_t create_acc;
+int ATM_count;
 
 void* ATM(void *arg)
 {
@@ -36,6 +37,8 @@ void* ATM(void *arg)
     if (line)
         free(line);
     
+    ATM_count--;
+    printf("DEBUG : Number of ATM's %d\n", ATM_count);
     pthread_exit(NULL);
     return NULL;
 } 
@@ -65,6 +68,7 @@ int do_command(char* line, int ATM_id)
 
     // Open new account
     /**********************************************************************************************/    
+    //READERS WRITERS 2016S
     if (!strcmp(cmd, "O"))
     {
         pthread_mutex_lock(&create_acc);
