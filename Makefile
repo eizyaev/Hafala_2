@@ -1,4 +1,4 @@
-# Makefile for the smash program
+# Makefile for the Bank program
 CC = g++
 CFLAGS = -g -Wall
 CCLINK = $(CC)

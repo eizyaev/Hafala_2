@@ -10,6 +10,8 @@ typedef struct ATM_arg
     char* log;
 }ATM_args;
 
+extern pthread_mutex_t create_acc;
+
 void* ATM(void *arg);
 
 #endif

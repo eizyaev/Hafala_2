@@ -8,6 +8,7 @@
 
 
 int do_command(char* line, int ATM_id);
+pthread_mutex_t create_acc;
 
 void* ATM(void *arg)
 {
@@ -61,27 +62,34 @@ int do_command(char* line, int ATM_id)
     int id = atoi(args[1]);
     int pass = atoi(args[2]);
     double new_balance = 0;
-    Account* src = find_acc(id);
 
     // Open new account
     /**********************************************************************************************/    
     if (!strcmp(cmd, "O"))
     {
+        pthread_mutex_lock(&create_acc);
+
+        Account* src = find_acc(id);
         double money = atoi(args[3]);
         if (src != NULL)
         {
             sleep(1);
             printf("Error %d: Your transaction failed – account id %d already exists\n", ATM_id, id);
+            pthread_mutex_unlock(&create_acc);
             return 1;
         }
         sleep(1);
         Create_acc(id, pass, money);
+
+        pthread_mutex_unlock(&create_acc);
+
         printf("%d: New account id is %d with password %d and initial balance %.0f\n", ATM_id, id, pass, money);
         return 0;
     }
     /**********************************************************************************************/    
     // General cases:
     // source account doesnt exist
+    Account* src = find_acc(id);
     if (src == NULL)
     {
         sleep(1);

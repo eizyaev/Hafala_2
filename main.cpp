@@ -17,6 +17,7 @@ int main(int argc, char *argv[])
     int atm_num = atoi(argv[1]);
     ATM_args* atm = (ATM_args*)malloc(sizeof (ATM_args)*atm_num);
     pthread_t *atm_threads= (pthread_t*)malloc(sizeof(pthread_t)*atm_num);
+    pthread_mutex_init(&create_acc, NULL);
 
     for (i=0 ; i < atm_num ; i++)
     {
@@ -28,6 +29,8 @@ int main(int argc, char *argv[])
 
     for(i=0; i < atm_num; i++)
         pthread_join(atm_threads[i], NULL);
+
+    pthread_mutex_destroy(&create_acc);
 
     
     // TODO: add memory free
