@@ -33,12 +33,13 @@ void* ATM(void *arg)
         do_command(line, cur_args->id);
     }
 
+    // closing opened file
     fclose(ATM_log);
     if (line)
         free(line);
     
     ATM_count--;
-    printf("DEBUG : Number of ATM's %d\n", ATM_count);
+    printf("DEBUG : Number of ATM's %d\n", ATM_count); // TODO: delete
     pthread_exit(NULL);
     return NULL;
 } 
@@ -55,7 +56,7 @@ int do_command(char* line, int ATM_id)
     if (cmd == NULL)
     {
         sleep(1);
-        printf("ERROR %d: Unknown Command\n", ATM_id);
+        fprintf(f, "ERROR %d: Unknown Command\n", ATM_id);
         return 1; 
     }
     args[0] = cmd;
@@ -78,7 +79,7 @@ int do_command(char* line, int ATM_id)
         if (src != NULL)
         {
             sleep(1);
-            printf("Error %d: Your transaction failed – account id %d already exists\n", ATM_id, id);
+            fprintf(f, "Error %d: Your transaction failed – account id %d already exists\n", ATM_id, id);
             pthread_mutex_unlock(&create_acc);
             return 1;
         }
@@ -87,7 +88,7 @@ int do_command(char* line, int ATM_id)
 
         pthread_mutex_unlock(&create_acc);
 
-        printf("%d: New account id is %d with password %d and initial balance %.0f\n", ATM_id, id, pass, money);
+        fprintf(f ,"%d: New account id is %d with password %d and initial balance %.0f\n", ATM_id, id, pass, money);
         return 0;
     }
     /**********************************************************************************************/    
@@ -97,14 +98,14 @@ int do_command(char* line, int ATM_id)
     if (src == NULL)
     {
         sleep(1);
-        printf("Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, id);
+        fprintf(f, "Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, id);
         return 1;
     }
     // source account password incorrect
     if (!src->is_valid(pass))
     {
         sleep(1);
-        printf("Error %d: Your transaction failed – password for account id %d is incorrect\n", ATM_id, id);
+        fprintf(f, "Error %d: Your transaction failed – password for account id %d is incorrect\n", ATM_id, id);
         return 1;
     }
     /**********************************************************************************************/    
@@ -113,7 +114,7 @@ int do_command(char* line, int ATM_id)
     {
         double money = atoi(args[3]);
         new_balance = src->deposit(money);
-        printf("%d: Account %d new balance is %.0f after %.0f $ was deposited\n",
+        fprintf(f, "%d: Account %d new balance is %.0f after %.0f $ was deposited\n",
                 ATM_id, id, new_balance, money);
         return 0;
     }
@@ -124,13 +125,13 @@ int do_command(char* line, int ATM_id)
         double money = atoi(args[3]);
         if (!src->pull(money, &new_balance))
         {
-            printf("Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
+            fprintf(f, "Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
                     ATM_id, id, money);
             return 1;
         }
         else
         {
-            printf("%d: Account %d new balance is %.0f after %.0f $ was withdrew\n",
+            fprintf(f, "%d: Account %d new balance is %.0f after %.0f $ was withdrew\n",
                     ATM_id, id, new_balance, money);
             return 0;
         }
@@ -141,7 +142,7 @@ int do_command(char* line, int ATM_id)
     else if(!strcmp(cmd, "B"))
     {
         new_balance = src->get_balance();
-        printf("%d: Account %d balance is %.0f\n", ATM_id, id, new_balance);
+        fprintf(f, "%d: Account %d balance is %.0f\n", ATM_id, id, new_balance);
         return 0;
     }
     /**********************************************************************************************/    
@@ -155,16 +156,16 @@ int do_command(char* line, int ATM_id)
         if (dst_acc == NULL)
         {
             sleep(1);
-            printf("Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, dst_id);
+            fprintf(f, "Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, dst_id);
             return 1;
         }
         if (!src->transfer(money, dst_acc, &new_balance, &dst_bal))
         {
-            printf("Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
+            fprintf(f, "Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
                     ATM_id, id, money);
             return 1;
         }
-        printf("%d: Transfer %.0f from account %d to account %d new account"
+        fprintf(f, "%d: Transfer %.0f from account %d to account %d new account"
                 "balance is %.0f new target account balance is %.0f\n",
                 ATM_id, money, id, dst_id, new_balance, dst_bal);
         return 0;
@@ -173,7 +174,7 @@ int do_command(char* line, int ATM_id)
     // Unknown operation
     else
     {
-        printf("ERROR %d: Unknown Command\n", ATM_id);
+        fprintf(f, "ERROR %d: Unknown Command\n", ATM_id);
         return 1;
     }
     /**********************************************************************************************/    

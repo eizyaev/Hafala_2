@@ -12,6 +12,7 @@ typedef struct ATM_arg
 
 extern pthread_mutex_t create_acc;
 extern int ATM_count;
+extern FILE *f;
 
 void* ATM(void *arg);
 

@@ -6,7 +6,7 @@ OBJS = main.o atm.o banking.o account.o
 RM = rm -f
 # Creating the  executable
 Bank: $(OBJS)
-	$(CCLINK) $(CFLAGS) -lpthread -o Bank $(OBJS)
+	$(CCLINK) $(CFLAGS) -o Bank $(OBJS)
 # Creating the object files
 main.o: main.cpp atm.h
 	$(CC) $(CFLAGS) -c main.cpp
