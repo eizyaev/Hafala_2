@@ -76,7 +76,7 @@ int do_command(char* line, int ATM_id)
         }
         sleep(1);
         Create_acc(id, pass, money);
-        printf("%d: New account id is %d with password %d and initial balance %f\n", ATM_id, id, pass, money);
+        printf("%d: New account id is %d with password %d and initial balance %.0f\n", ATM_id, id, pass, money);
         return 0;
     }
     /**********************************************************************************************/    
@@ -101,7 +101,7 @@ int do_command(char* line, int ATM_id)
     {
         double money = atoi(args[3]);
         new_balance = src->deposit(money);
-        printf("%d: Account %d new balance is %f after %f $ was deposited\n",
+        printf("%d: Account %d new balance is %.0f after %.0f $ was deposited\n",
                 ATM_id, id, new_balance, money);
         return 0;
     }
@@ -112,13 +112,13 @@ int do_command(char* line, int ATM_id)
         double money = atoi(args[3]);
         if (!src->pull(money, &new_balance))
         {
-            printf("Error %d: Your transaction failed – account id %d balance is lower than %f\n",
+            printf("Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
                     ATM_id, id, money);
             return 1;
         }
         else
         {
-            printf("%d: Account %d new balance is %f after %f $ was withdrew\n",
+            printf("%d: Account %d new balance is %.0f after %.0f $ was withdrew\n",
                     ATM_id, id, new_balance, money);
             return 0;
         }
@@ -129,7 +129,7 @@ int do_command(char* line, int ATM_id)
     else if(!strcmp(cmd, "B"))
     {
         new_balance = src->get_balance();
-        printf("%d: Account %d balance is %f\n", ATM_id, id, new_balance);
+        printf("%d: Account %d balance is %.0f\n", ATM_id, id, new_balance);
         return 0;
     }
     /**********************************************************************************************/    
@@ -148,12 +148,12 @@ int do_command(char* line, int ATM_id)
         }
         if (!src->transfer(money, dst_acc, &new_balance, &dst_bal))
         {
-            printf("Error %d: Your transaction failed – account id %d balance is lower than %f\n",
+            printf("Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
                     ATM_id, id, money);
             return 1;
         }
-        printf("%d: Transfer %f from account %d to account %d new account"
-                "balance is %f new target account balance is %f\n",
+        printf("%d: Transfer %.0f from account %d to account %d new account"
+                "balance is %.0f new target account balance is %.0f\n",
                 ATM_id, money, id, dst_id, new_balance, dst_bal);
         return 0;
     }
