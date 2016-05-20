@@ -2,7 +2,6 @@
 #define ACCOUNT_H
 
 #include <pthread.h>
-#include <string>
 
 /* Class for thread safe account managment */
 class Account
@@ -11,7 +10,7 @@ class Account
         // account data
         int acc_id;
         double balance;
-        const std::string pass;
+        const int pass;
 
         // counters for the readers/writers implementation
         int readcount;
@@ -24,7 +23,7 @@ class Account
         pthread_mutex_t resource;
 
     public:
-        Account(int id = 0, double money = 0, const std::string& password = ""); // constructor
+        Account(int id = 0, double money = 0, const int password = 0); // constructor
         ~Account(); // distructor
 
         /* depositis money into the account */
@@ -35,7 +34,7 @@ class Account
         /* retunrs the account balance */
         double get_balance(); 
         /* checks if the entered password is correct */
-        bool is_valid(std::string password); 
+        bool is_valid(int password); 
          /* Transfer money from this account to dest account*/
         bool transfer(double money, Account* dest, double *src_bal, double* dst_bal);
 

@@ -2,15 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include "ATM.h"
+#include "atm.h"
 
 #define MAX_ARG 5
 
-typedef struct ATM_arg
-{
-    int id;
-    char* log;
-} ATM_args;
 
 int do_command(char* line, int ATM_id);
 
@@ -32,15 +27,16 @@ void* ATM(void *arg)
 
     while ((read = getline(&line, &len, ATM_log)) != -1)
     {
-        usleep(3);
+        usleep(100);
         do_command(line, cur_args->id);
     }
 
     fclose(ATM_log);
     if (line)
         free(line);
-    exit(0);
-
+    
+    pthread_exit(NULL);
+    return NULL;
 } 
 
 int do_command(char* line, int ATM_id)
@@ -63,7 +59,7 @@ int do_command(char* line, int ATM_id)
         args[i] = strtok(NULL, delimiters); 
 
     int id = atoi(args[1]);
-    std::string pass(args[2]);
+    int pass = atoi(args[2]);
     double new_balance = 0;
     Account* src = find_acc(id);
 
@@ -80,7 +76,7 @@ int do_command(char* line, int ATM_id)
         }
         sleep(1);
         Create_acc(id, pass, money);
-        printf("%d: New account id is %d with password %s and initial balance %f\n", id, pass, money);
+        printf("%d: New account id is %d with password %d and initial balance %f\n", ATM_id, id, pass, money);
         return 0;
     }
     /**********************************************************************************************/    
@@ -134,6 +130,7 @@ int do_command(char* line, int ATM_id)
     {
         new_balance = src->get_balance();
         printf("%d: Account %d balance is %f\n", ATM_id, id, new_balance);
+        return 0;
     }
     /**********************************************************************************************/    
     // Transfer money

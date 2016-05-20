@@ -28,7 +28,7 @@ class compare_for_sort
  * Param 1 - account id to be created
  * Param 2 - password for that account
  * Param 3 - amount to initialize account with */
-void Create_acc(int acc_id, std::string pass, int amount)
+void Create_acc(int acc_id, int pass, int amount)
 {
     Account* new_acc = new Account(acc_id, amount, pass); // new account
     b_accs.push_back(new_acc); // inserting into our bank
@@ -44,6 +44,10 @@ Account* find_acc(int acc_id)
 {
     Account to_find(acc_id); // demo account to be searched by id
     comare_for_find eq(&to_find); // building the compare object
-    return *(std::find_if(b_accs.begin(), b_accs.end(), eq));
+    std::vector<Account*>::iterator it = (std::find_if(b_accs.begin(), b_accs.end(), eq));
+    if (it == b_accs.end())
+        return NULL;
+    else
+        return *(it);
 }
 

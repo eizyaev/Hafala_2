@@ -4,7 +4,7 @@
 //READERS WRITERS 2016S
 
 /* The constructor of the class */
-Account::Account(int id, double money, const std::string& password):
+Account::Account(int id, double money, const int password):
 acc_id(id), balance(money), pass(password), readcount(0), writecount(0)
 {   /* Initializing all local account mutexes */
     pthread_mutex_init(&r_mutex, NULL);
@@ -22,7 +22,7 @@ Account::~Account()
     pthread_mutex_destroy(&resource); 
 }
 /* returns true if the password is correct */
-bool Account::is_valid(std::string password)
+bool Account::is_valid(int password)
 {
     return pass == password;
 }
