@@ -4,7 +4,6 @@
 #include <unistd.h>
 #include <pthread.h>
 #include "atm.h"
-FILE *f;
 
 int main(int argc, char *argv[])
 {
@@ -16,6 +15,7 @@ int main(int argc, char *argv[])
 
     int i=0; 
     int atm_num = atoi(argv[1]);
+    ATM_count = atm_num;
     ATM_args* atm = (ATM_args*)malloc(sizeof (ATM_args)*atm_num);
     if (atm == NULL)
     {
@@ -30,10 +30,14 @@ int main(int argc, char *argv[])
         free(atm);
         exit(1);
     }
+    // bank printing thread
+    pthread_t bank_print;
+    pthread_create(&bank_print, NULL, print_status, (void*)NULL); // TODO syscall
 
-    pthread_mutex_init(&create_acc, NULL); // TODO syscall
-    ATM_count = atm_num;
-    printf("DEBUG : Number of ATM's %d\n", ATM_count); // TODO delete
+    pthread_mutex_init(&create_mutex, NULL); // TODO syscall
+    pthread_mutex_init(&find_mutex, NULL); // TODO syscall
+    pthread_mutex_init(&resource_mutex, NULL); // TODO syscall
+    pthread_mutex_init(&block_mutex, NULL); // TODO syscall
     
     // openning log.txt file for write
     f = fopen("log.txt", "w");
@@ -62,8 +66,12 @@ int main(int argc, char *argv[])
 
     for(i=0; i < atm_num; i++)
         pthread_join(atm_threads[i], NULL); // TODO syscall
+    pthread_join(bank_print, NULL); // TODO syscall
 
-    pthread_mutex_destroy(&create_acc); // TODO syscall
+    pthread_mutex_destroy(&create_mutex); // TODO syscall
+    pthread_mutex_destroy(&find_mutex); // TODO syscall
+    pthread_mutex_destroy(&resource_mutex); // TODO syscall
+    pthread_mutex_destroy(&block_mutex); // TODO syscall
 
     // closing log.txt file
     fclose(f); // TODO syscall
@@ -78,6 +86,8 @@ int main(int argc, char *argv[])
     
     for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
         delete (*it);
+
+    printf("FINISHED\n");
 
     return 0;
 }

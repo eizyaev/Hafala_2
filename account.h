@@ -33,6 +33,12 @@ class Account
         bool pull(double money, double* new_bal);
         /* retunrs the account balance */
         double get_balance(); 
+        /* retunrs the account balance without delay */
+        double bank_get_balance();
+        // get account's id
+        int get_id();
+        // get account's password
+        int get_pass();
         /* checks if the entered password is correct */
         bool is_valid(int password); 
          /* Transfer money from this account to dest account*/

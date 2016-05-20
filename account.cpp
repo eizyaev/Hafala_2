@@ -147,6 +147,43 @@ double Account::get_balance()
     return cur_balance;
 }
 
+/* Readers implemantion per account */
+double Account::bank_get_balance()
+{
+    pthread_mutex_lock(&block_r_mutex); //Indicate a reader is trying to enter
+
+    pthread_mutex_lock(&r_mutex); //lock entry section to avoid race condition with other readers
+    readcount++; //report yourself as a reader
+    if (readcount == 1) //checks if you are first reader
+        pthread_mutex_lock(&resource); //if you are first reader, lock the resource
+    pthread_mutex_unlock(&r_mutex); //release entry section for other readers
+
+    pthread_mutex_unlock(&block_r_mutex); //indicate you are done trying to access the resource
+
+    // reading is performed
+    double cur_balance = balance;
+
+    pthread_mutex_lock(&r_mutex); //reserve exit section - avoids race condition with readers
+    readcount--; //indicate you're leaving
+    if (readcount == 0) //checks if you are last reader leaving
+        pthread_mutex_unlock(&resource); //if last, you must release the locked resource
+    pthread_mutex_unlock(&r_mutex); //release exit section for other readers
+
+    return cur_balance;
+}
+
+// get account's id
+int Account::get_id()
+{
+    return acc_id;
+}
+
+// get account's password
+int Account::get_pass()
+{
+    return pass;
+}
+
 /* Operator overload for comparing accounts by their id number */
 bool Account::operator<(const Account& acc) const 
 {

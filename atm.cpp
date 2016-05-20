@@ -8,9 +8,16 @@
 
 
 int do_command(char* line, int ATM_id);
-pthread_mutex_t create_acc;
+// database multithreading mutexes
+pthread_mutex_t create_mutex, find_mutex, resource_mutex, block_mutex;
+// database readers/writers counters
+int create_counter = 0;
+int find_counter = 0;
+// active ATM's counter
 int ATM_count;
+FILE *f;
 
+/* ATM thread function */
 void* ATM(void *arg)
 {
     ATM_args* cur_args = (ATM_args*)arg; 
@@ -27,6 +34,7 @@ void* ATM(void *arg)
     size_t len = 0;
     ssize_t read;
 
+    // read line from .txt file
     while ((read = getline(&line, &len, ATM_log)) != -1)
     {
         usleep(100);
@@ -39,11 +47,14 @@ void* ATM(void *arg)
         free(line);
     
     ATM_count--;
-    printf("DEBUG : Number of ATM's %d\n", ATM_count); // TODO: delete
     pthread_exit(NULL);
     return NULL;
 } 
 
+/* perform ATM command
+ * Param 1 - command line 
+ * Param 2 - ATM's id numer 
+ * Return 0/1 for success status*/
 int do_command(char* line, int ATM_id)
 {
 
@@ -72,24 +83,41 @@ int do_command(char* line, int ATM_id)
     //READERS WRITERS 2016S
     if (!strcmp(cmd, "O"))
     {
-        pthread_mutex_lock(&create_acc);
-
-        Account* src = find_acc(id);
+        int ret = 0;
         double money = atoi(args[3]);
+        
+        // entry section
+        pthread_mutex_lock(&create_mutex); // lock entry
+        create_counter++; //report yourself as a writer
+        if (create_counter == 1) //checks if you're first writer
+            pthread_mutex_lock(&block_mutex); //if you're first, lock the readers out 
+        pthread_mutex_unlock(&create_mutex); //release entry section
+        
+        // writing section - creating new account
+        pthread_mutex_lock(&resource_mutex); // lock the database
+
+        Account* src = find_acc_for_create(id);
         if (src != NULL)
         {
             sleep(1);
             fprintf(f, "Error %d: Your transaction failed – account id %d already exists\n", ATM_id, id);
-            pthread_mutex_unlock(&create_acc);
-            return 1;
         }
-        sleep(1);
-        Create_acc(id, pass, money);
+        else
+        {
+            sleep(1);
+            Create_acc(id, pass, money);
+            fprintf(f ,"%d: New account id is %d with password %d and initial balance %.0f\n", ATM_id, id, pass, money);
+        }
+        pthread_mutex_unlock(&resource_mutex); // unlock the database
 
-        pthread_mutex_unlock(&create_acc);
+        // exit section
+        pthread_mutex_lock(&create_mutex); //reserve exit section
+        create_counter--; //indicate you're leaving
+        if (create_counter == 0) //checks if you're the last writer
+            pthread_mutex_unlock(&block_mutex); //if you're last writer, allow readers to enter
+        pthread_mutex_unlock(&create_mutex); //release exit section
 
-        fprintf(f ,"%d: New account id is %d with password %d and initial balance %.0f\n", ATM_id, id, pass, money);
-        return 0;
+        return ret;
     }
     /**********************************************************************************************/    
     // General cases:
@@ -174,6 +202,7 @@ int do_command(char* line, int ATM_id)
     // Unknown operation
     else
     {
+        sleep(1);
         fprintf(f, "ERROR %d: Unknown Command\n", ATM_id);
         return 1;
     }

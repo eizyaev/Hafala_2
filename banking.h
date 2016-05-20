@@ -10,7 +10,11 @@
  * sorted_accs - used for printing bank status in sorted order */
 extern std::vector<Account*> b_accs, sorted_accs;
 
+/* The bank status printing thread function
+ * Prints the status of all accounts every 0.5 second */
+void* print_status(void *arg);
 void Create_acc(int acc_id, int pass, double amount); // creates new account
 Account* find_acc(int acc_id); // searches account by its id number
+Account* find_acc_for_create(int acc_id); // lock free search
 
 #endif
