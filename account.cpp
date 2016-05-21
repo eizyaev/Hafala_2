@@ -121,6 +121,35 @@ bool Account::pull(double money, double* new_bal)
     return status;
 }
 
+/* get rounded %com money from this account */
+double Account::get_commission(double com)
+{
+    double money;
+
+    pthread_mutex_lock(&w_mutex); //entry section for writers
+    writecount++; //report yourself as a writer entering
+    if (writecount == 1) //checks if you're first writer
+        pthread_mutex_lock(&block_r_mutex); //if you're first, then you must lock the readers out
+    pthread_mutex_unlock(&w_mutex); //release entry section
+
+    // writing is performed
+    pthread_mutex_lock(&resource); //reserve the resource
+
+    money = (int)(com * balance + 0.5);
+    balance -= money;  // writing is performed
+
+    pthread_mutex_unlock(&resource); //release resource
+
+
+    pthread_mutex_lock(&w_mutex); //exit section
+    writecount--; //indicate you're leaving
+    if (writecount == 0) //checks if you're the last writer
+        pthread_mutex_unlock(&block_r_mutex); //if you're last writer, unlock the readers
+    pthread_mutex_unlock(&w_mutex); //release exit section
+
+    return money;
+}
+
 /* Readers implemantion per account */
 double Account::get_balance()
 {

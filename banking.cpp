@@ -1,9 +1,11 @@
+#include <stdlib.h>
 #include "banking.h"
 #include "atm.h"
 
 /* The main database for the bank, container of accounts
  * b_accs - used for reading/writing */
 std::vector<Account*> b_accs;
+double bank_account;
 
 /* The bank status printing thread function
  * Prints the status of all accounts every 0.5 second */
@@ -44,11 +46,58 @@ void* print_status(void *arg)
             pthread_mutex_unlock(&resource_mutex); // release database if you're last  
         pthread_mutex_unlock(&find_mutex); //release exit section
 
+        printf("The Bank has %.0f $\n", bank_account);
+
     }
     pthread_exit(NULL);
     return NULL;
 }
 
+/* Bank's commission collecting threads*/
+void* commission(void *arg)
+{
+    while(ATM_count > 0) // run as long there are active atm's
+    {
+        double taken = 0;
+        int id;
+        sleep(3);
+        srand(time(NULL));
+        // generating random number [2.4]
+        double rand_com = (double)rand() / RAND_MAX;
+        rand_com = 2 + rand_com * 2;
+
+        // entry section
+        pthread_mutex_lock(&block_mutex); // A reader is trying to enter
+
+        pthread_mutex_lock(&find_mutex); // Lock entry
+        find_counter++; //report yourself as a reader
+        if (find_counter == 1) //checks if you're first reader
+            pthread_mutex_lock(&resource_mutex); //if you're first, lock the database
+        pthread_mutex_unlock(&find_mutex); //release entry section
+        pthread_mutex_unlock(&block_mutex); // done trying access the database
+        
+        // database section reading, (iterating)
+        for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
+        {
+            taken = (*it)->get_commission(rand_com/100);
+            bank_account += taken;
+            id = (*it)->get_id();
+            fprintf(f, "Bank: commissions of %.2f %% were charged, the bank gained %.2f $ from account %d\n", rand_com, taken, id); 
+        }
+
+        // exit section
+        pthread_mutex_lock(&find_mutex); // Lock exit section
+        find_counter--; // Indicate you're leaving
+        if (find_counter == 0) // check if you're last 
+            pthread_mutex_unlock(&resource_mutex); // release database if you're last  
+        pthread_mutex_unlock(&find_mutex); //release exit section
+
+
+    }
+
+    pthread_exit(NULL);
+    return NULL;
+}
 /* Function pointer class for using std::find_if() func */
 class comare_for_find
 {

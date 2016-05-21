@@ -34,9 +34,10 @@ int main(int argc, char *argv[])
         exit(1);
     }
 
-    // bank printing thread
-    pthread_t bank_print;
+    // bank threads
+    pthread_t bank_print, commission_collector;
     pthread_create(&bank_print, NULL, print_status, (void*)NULL); // TODO syscall
+    pthread_create(&commission_collector, NULL, commission, (void*)NULL); // TODO syscall
 
     // database readers/writers mutexes
     pthread_mutex_init(&create_mutex, NULL); // TODO syscall
@@ -75,6 +76,7 @@ int main(int argc, char *argv[])
         pthread_join(atm_threads[i], NULL); // TODO syscall
     // collecting banking printing thread
     pthread_join(bank_print, NULL); // TODO syscall
+    pthread_join(commission_collector, NULL); // TODO syscall
 
     // destroying database mutexes
     pthread_mutex_destroy(&create_mutex); // TODO syscall
@@ -96,8 +98,6 @@ int main(int argc, char *argv[])
     // accounts memory free
     for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
         delete (*it);
-
-    printf("FINISHED\n");
 
     return 0;
 }

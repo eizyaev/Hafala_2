@@ -35,6 +35,8 @@ class Account
         double get_balance(); 
         /* retunrs the account balance without delay */
         double bank_get_balance();
+        /* get rounded %com money from this account */
+        double get_commission(double com);
         // get account's id
         int get_id();
         // get account's password
