@@ -36,14 +36,38 @@ int main(int argc, char *argv[])
 
     // bank threads
     pthread_t bank_print, commission_collector;
-    pthread_create(&bank_print, NULL, print_status, (void*)NULL); // TODO syscall
-    pthread_create(&commission_collector, NULL, commission, (void*)NULL); // TODO syscall
+    if (pthread_create(&bank_print, NULL, print_status, (void*)NULL))
+    {
+        fprintf(stderr, "Failed to create: bank printing thread\n");
+        exit(1);
+    }
+    if (pthread_create(&commission_collector, NULL, commission, (void*)NULL))
+    {
+        fprintf(stderr, "Failed to create: commission collector thread\n");
+        exit(1);
+    }
 
     // database readers/writers mutexes
-    pthread_mutex_init(&create_mutex, NULL); // TODO syscall
-    pthread_mutex_init(&find_mutex, NULL); // TODO syscall
-    pthread_mutex_init(&resource_mutex, NULL); // TODO syscall
-    pthread_mutex_init(&block_mutex, NULL); // TODO syscall
+    if (pthread_mutex_init(&create_mutex, NULL))
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_init(&find_mutex, NULL))
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_init(&resource_mutex, NULL))
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_init(&block_mutex, NULL))
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
     
     // openning log.txt file for write
     f = fopen("log.txt", "w");
@@ -59,7 +83,7 @@ int main(int argc, char *argv[])
         if (atm[i].log == NULL)
         {
             for (i=0 ; i <= atm_num ; i++)
-                free(atm[i].log); // TODO syscall
+                free(atm[i].log);
             free(atm_threads);
             free(atm);
             fprintf(stderr, "Error not enough space\n");
@@ -68,33 +92,69 @@ int main(int argc, char *argv[])
         strcpy(atm[i].log, argv[i+2]);
         atm[i].id = i+1;
         // creating atm's threads
-        pthread_create(&atm_threads[i], NULL, ATM, (void*)&atm[i]); // TODO syscall
+        if (pthread_create(&atm_threads[i], NULL, ATM, (void*)&atm[i]))
+        {
+            for (i=0 ; i <= atm_num ; i++)
+                free(atm[i].log);
+            free(atm_threads);
+            free(atm);
+            fprintf(stderr, "Failed to create: ATM %d thread\n", i+1);
+            exit(1);
+        }
     }
 
     // collecting finshed atm threads
     for(i=0; i < atm_num; i++)
-        pthread_join(atm_threads[i], NULL); // TODO syscall
+        if (pthread_join(atm_threads[i], NULL))
+        {
+            fprintf(stderr, "Failed to join: ATM %d thread\n", i+1);
+            exit(1);
+        }
     // collecting banking printing thread
-    pthread_join(bank_print, NULL); // TODO syscall
-    pthread_join(commission_collector, NULL); // TODO syscall
+    if (pthread_join(bank_print, NULL))
+        {
+            fprintf(stderr, "Failed to join: bank printing thread\n");
+            exit(1);
+        }
+    if (pthread_join(commission_collector, NULL))
+        {
+            fprintf(stderr, "Failed to join: commission collector thread\n");
+            exit(1);
+        }
 
     // destroying database mutexes
-    pthread_mutex_destroy(&create_mutex); // TODO syscall
-    pthread_mutex_destroy(&find_mutex); // TODO syscall
-    pthread_mutex_destroy(&resource_mutex); // TODO syscall
-    pthread_mutex_destroy(&block_mutex); // TODO syscall
+    if (pthread_mutex_destroy(&create_mutex))
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_destroy(&find_mutex))
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_destroy(&resource_mutex))
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_destroy(&block_mutex))
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
 
     // closing log.txt file
-    fclose(f); // TODO syscall
+    fclose(f);
     if (f)
         free(f);
 
     // memory free
     for (i=0 ; i < atm_num ; i++)
-        free(atm[i].log); // TODO syscall
+        free(atm[i].log);
     free(atm_threads);
     free(atm);
-    
+
     // accounts memory free
     for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
         delete (*it);

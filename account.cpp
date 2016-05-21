@@ -1,5 +1,7 @@
-#include "account.h"
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "account.h"
 
 //READERS WRITERS 2016S
 
@@ -7,19 +9,51 @@
 Account::Account(int id, double money, const int password):
 acc_id(id), balance(money), pass(password), readcount(0), writecount(0)
 {   /* Initializing all local account mutexes */
-    pthread_mutex_init(&r_mutex, NULL);
-    pthread_mutex_init(&w_mutex, NULL); 
-    pthread_mutex_init(&block_r_mutex, NULL); 
-    pthread_mutex_init(&resource, NULL); 
+    if (pthread_mutex_init(&r_mutex, NULL))
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_init(&w_mutex, NULL)) 
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_init(&block_r_mutex, NULL)) 
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_init(&resource, NULL)) 
+    {
+        fprintf(stderr, "Failed to init mutex\n");
+        exit(1);
+    }
 }
 
 /* The destructor of the class */
 Account::~Account()
 {   /* destroying all local account mutexes */
-    pthread_mutex_destroy(&r_mutex); 
-    pthread_mutex_destroy(&w_mutex); 
-    pthread_mutex_destroy(&block_r_mutex); 
-    pthread_mutex_destroy(&resource); 
+    if (pthread_mutex_destroy(&r_mutex)) 
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_destroy(&w_mutex)) 
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_destroy(&block_r_mutex)) 
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
+    if (pthread_mutex_destroy(&resource)) 
+    {
+        fprintf(stderr, "Failed to destroy mutex\n");
+        exit(1);
+    }
 }
 /* returns true if the password is correct */
 bool Account::is_valid(int password)

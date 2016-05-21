@@ -82,7 +82,7 @@ void* commission(void *arg)
             taken = (*it)->get_commission(rand_com/100);
             bank_account += taken;
             id = (*it)->get_id();
-            fprintf(f, "Bank: commissions of %.2f %% were charged, the bank gained %.2f $ from account %d\n", rand_com, taken, id); 
+            fprintf(f, "Bank: commissions of %.2f %% were charged, the bank gained %.0f $ from account %d\n", rand_com, taken, id); 
         }
 
         // exit section
