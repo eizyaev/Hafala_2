@@ -45,7 +45,7 @@ void* ATM(void *arg)
     fclose(ATM_log);
     if (line)
         free(line);
-    
+
     ATM_count--;
     pthread_exit(NULL);
     return NULL;
@@ -84,14 +84,14 @@ int do_command(char* line, int ATM_id)
     if (!strcmp(cmd, "O"))
     {
         double money = atoi(args[3]);
-        
+
         // entry section
         pthread_mutex_lock(&create_mutex); // lock entry
         create_counter++; //report yourself as a writer
         if (create_counter == 1) //checks if you're first writer
             pthread_mutex_lock(&block_mutex); //if you're first, lock the readers out 
         pthread_mutex_unlock(&create_mutex); //release entry section
-        
+
         // writing section - creating new account
         pthread_mutex_lock(&resource_mutex); // lock the database
 
@@ -179,30 +179,39 @@ int do_command(char* line, int ATM_id)
         int dst_id = atoi(args[3]);
         double money = atoi(args[4]);
         double dst_bal = 0;
-	
-	if ( src->bank_get_balance() < money )
-	{
-        sleep(1);
-        fprintf(f, "Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
-                ATM_id, id, money);
-        return 1;
-	}
+        new_balance = src->bank_get_balance();
 
-    Account* dst_acc = find_acc(dst_id);
-    if (dst_acc == NULL)
-    {
-        sleep(1);
-        fprintf(f, "Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, dst_id);
-        return 1;
-    }
+        if ( new_balance < money )
+        {
+            sleep(1);
+            fprintf(f, "Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
+                    ATM_id, id, money);
+            return 1;
+        }
+        if ( id == dst_id )
+        {
+            sleep(1);
+            fprintf(f, "%d: Transfer %.0f from account %d to account %d new account"
+                    " balance is %.0f new target account balance is %.0f\n",
+                    ATM_id, money, id, dst_id, new_balance, new_balance);
+            return 0;
+        }
 
-    src->transfer(money, dst_acc, &new_balance, &dst_bal);
+        Account* dst_acc = find_acc(dst_id);
+        if (dst_acc == NULL)
+        {
+            sleep(1);
+            fprintf(f, "Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, dst_id);
+            return 1;
+        }
 
-    fprintf(f, "%d: Transfer %.0f from account %d to account %d new account"
-            "balance is %.0f new target account balance is %.0f\n",
-            ATM_id, money, id, dst_id, new_balance, dst_bal);
+        src->transfer(money, dst_acc, &new_balance, &dst_bal);
 
-    return 0;
+        fprintf(f, "%d: Transfer %.0f from account %d to account %d new account"
+                " balance is %.0f new target account balance is %.0f\n",
+                ATM_id, money, id, dst_id, new_balance, dst_bal);
+
+        return 0;
     }
     /**********************************************************************************************/    
     // Unknown operation
