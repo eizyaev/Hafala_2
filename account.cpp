@@ -62,10 +62,8 @@ bool Account::is_valid(int password)
 }
 
 /* Transfer money from this account to dest account*/
-bool Account::transfer(double money, Account* dest, double *src_bal, double* dst_bal)
+void Account::transfer(double money, Account* dest, double *src_bal, double* dst_bal)
 {
-    bool status = true;
-
     pthread_mutex_lock(&w_mutex); //reserve entry section for writers - avoids race conditions
     writecount++; //report yourself as a writer entering
     if (writecount == 1) //checks if you're first writer
@@ -74,17 +72,11 @@ bool Account::transfer(double money, Account* dest, double *src_bal, double* dst
 
     // writing is performed
     pthread_mutex_lock(&resource); //reserve the resource for yourself
-    if (money > balance)
-    {
-        sleep(1);
-        status = false;    
-    }
-    else
-    {
-        balance -= money;  // writing is performed
-        *src_bal = balance;
-        *dst_bal = dest->deposit(money);
-    }
+
+    balance -= money;  // writing is performed
+    *src_bal = balance;
+    *dst_bal = dest->deposit(money);
+
     pthread_mutex_unlock(&resource); //release file
 
 
@@ -94,7 +86,6 @@ bool Account::transfer(double money, Account* dest, double *src_bal, double* dst
         pthread_mutex_unlock(&block_r_mutex); //if you're last writer, you must unlock the readers. Allows them to try enter CS for reading
     pthread_mutex_unlock(&w_mutex); //release exit section
 
-    return status;
 }
 /* Writers implemantion per account */
 double Account::deposit(double money)

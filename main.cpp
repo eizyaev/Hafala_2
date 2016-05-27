@@ -82,8 +82,8 @@ int main(int argc, char *argv[])
         atm[i].log = (char*)malloc(strlen(argv[i+2])+1);
         if (atm[i].log == NULL)
         {
-            for (i=0 ; i <= atm_num ; i++)
-                free(atm[i].log);
+            for (int j=0 ; j <= i ; j++)
+                free(atm[j].log);
             free(atm_threads);
             free(atm);
             fprintf(stderr, "Error not enough space\n");
@@ -94,11 +94,11 @@ int main(int argc, char *argv[])
         // creating atm's threads
         if (pthread_create(&atm_threads[i], NULL, ATM, (void*)&atm[i]))
         {
-            for (i=0 ; i <= atm_num ; i++)
-                free(atm[i].log);
+            for (int j=0 ; j <= i ; j++)
+                free(atm[j].log);
             free(atm_threads);
             free(atm);
-            fprintf(stderr, "Failed to create: ATM %d thread\n", i+1);
+            fprintf(stderr, "Error not enough space\n");
             exit(1);
         }
     }

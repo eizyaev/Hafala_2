@@ -9,6 +9,7 @@ double bank_account;
 
 /* The bank status printing thread function
  * Prints the status of all accounts every 0.5 second */
+//READERS WRITERS 2016S
 void* print_status(void *arg)
 {
     printf("\033[2J"); // clear screen

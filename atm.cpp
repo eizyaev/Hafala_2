@@ -83,7 +83,6 @@ int do_command(char* line, int ATM_id)
     //READERS WRITERS 2016S
     if (!strcmp(cmd, "O"))
     {
-        int ret = 0;
         double money = atoi(args[3]);
         
         // entry section
@@ -117,7 +116,7 @@ int do_command(char* line, int ATM_id)
             pthread_mutex_unlock(&block_mutex); //if you're last writer, allow readers to enter
         pthread_mutex_unlock(&create_mutex); //release exit section
 
-        return ret;
+        return 0;
     }
     /**********************************************************************************************/    
     // General cases:
@@ -180,23 +179,30 @@ int do_command(char* line, int ATM_id)
         int dst_id = atoi(args[3]);
         double money = atoi(args[4]);
         double dst_bal = 0;
-        Account* dst_acc = find_acc(dst_id);
-        if (dst_acc == NULL)
-        {
-            sleep(1);
-            fprintf(f, "Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, dst_id);
-            return 1;
-        }
-        if (!src->transfer(money, dst_acc, &new_balance, &dst_bal))
-        {
-            fprintf(f, "Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
-                    ATM_id, id, money);
-            return 1;
-        }
-        fprintf(f, "%d: Transfer %.0f from account %d to account %d new account"
-                "balance is %.0f new target account balance is %.0f\n",
-                ATM_id, money, id, dst_id, new_balance, dst_bal);
-        return 0;
+	
+	if ( src->bank_get_balance() < money )
+	{
+        sleep(1);
+        fprintf(f, "Error %d: Your transaction failed – account id %d balance is lower than %.0f\n",
+                ATM_id, id, money);
+        return 1;
+	}
+
+    Account* dst_acc = find_acc(dst_id);
+    if (dst_acc == NULL)
+    {
+        sleep(1);
+        fprintf(f, "Error %d: Your transaction failed – account id %d does not exist\n", ATM_id, dst_id);
+        return 1;
+    }
+
+    src->transfer(money, dst_acc, &new_balance, &dst_bal);
+
+    fprintf(f, "%d: Transfer %.0f from account %d to account %d new account"
+            "balance is %.0f new target account balance is %.0f\n",
+            ATM_id, money, id, dst_id, new_balance, dst_bal);
+
+    return 0;
     }
     /**********************************************************************************************/    
     // Unknown operation
