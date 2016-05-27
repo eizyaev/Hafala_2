@@ -146,8 +146,6 @@ int main(int argc, char *argv[])
 
     // closing log.txt file
     fclose(f);
-    if (f)
-        free(f);
 
     // memory free
     for (i=0 ; i < atm_num ; i++)
@@ -156,8 +154,8 @@ int main(int argc, char *argv[])
     free(atm);
 
     // accounts memory free
-    for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
-        delete (*it);
+        for(std::vector<Account*>::iterator it = b_accs.begin(); it != b_accs.end(); ++it)
+            delete (*it);
 
     return 0;
 }
